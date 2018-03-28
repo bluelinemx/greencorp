@@ -40,6 +40,8 @@ class EdiImportLine(models.TransientModel):
 
             return product
 
+        return False
+
     @api.model
     def create(self, values):
         item = super().create(values)
@@ -117,8 +119,7 @@ class EdiImport(models.TransientModel):
     currency_id = fields.Many2one('res.currency', 'Currency', compute='_compute_edi_values', store=True)
     company_id = fields.Many2one('res.partner', 'Company', compute='_compute_edi_values', store=True)
     partner_id = fields.Many2one('res.partner', 'Client', compute='_compute_edi_values', store=True)
-    partner_shipping_id = fields.Many2one('res.partner', string='Delivery Address', compute='_compute_edi_values',
-                                          store=True)
+    partner_shipping_id = fields.Many2one('res.partner', string='Delivery Address', compute='_compute_edi_values', store=True)
     state = fields.Char("State")
     date_invoice = fields.Datetime()
     payment_term_name = fields.Char("Payement Term", size=255)
@@ -127,8 +128,7 @@ class EdiImport(models.TransientModel):
     l10n_mx_edi_cfdi_certificate_id = fields.Char()
     invoice_id = fields.Many2one('account.invoice', 'Invoice')
     fiscal_position_code = fields.Char('Fiscal Position Code')
-    fiscal_position_id = fields.Many2one('account.fiscal.position', 'Fiscal Position', compute='_compute_edi_values',
-                                         store=True)
+    fiscal_position_id = fields.Many2one('account.fiscal.position', 'Fiscal Position', compute='_compute_edi_values', store=True)
 
     amount_untaxed = fields.Monetary(string='Untaxed Amount', store=True, readonly=True)
     amount_tax = fields.Monetary(string='Taxes', store=True, readonly=True)
@@ -137,8 +137,7 @@ class EdiImport(models.TransientModel):
     line_ids = fields.One2many('l10n.mx.edi.import.wizard.line', 'import_id', 'Lines')
 
     @api.multi
-    @api.depends('currency_code', 'payment_term_name', 'fiscal_position_code', 'l10n_mx_edi_cfdi_supplier_rfc',
-                 'l10n_mx_edi_cfdi_customer_rfc')
+    @api.depends('currency_code', 'payment_term_name', 'fiscal_position_code', 'l10n_mx_edi_cfdi_supplier_rfc', 'l10n_mx_edi_cfdi_customer_rfc')
     def _compute_edi_values(self):
         self.ensure_one()
         if self.fiscal_position_code:
@@ -313,8 +312,7 @@ class EdiImport(models.TransientModel):
 
         self.version = xml.attrib.get('Version')
         self.name = xml.attrib.get('Folio')
-        self.date_invoice = datetime.strptime(xml.attrib.get('Fecha'), '%Y-%m-%dT%H:%M:%S') if xml.attrib.get(
-            'Fecha') else False
+        self.date_invoice = datetime.strptime(xml.attrib.get('Fecha'), '%Y-%m-%dT%H:%M:%S') if xml.attrib.get('Fecha') else False
         self.currency_code = xml.attrib.get('Moneda')
         self.l10n_mx_edi_cfdi_amount = float(xml.attrib.get('Total', xml.attrib.get('total', 0)))
 
@@ -341,7 +339,7 @@ class EdiImport(models.TransientModel):
         if self.company_id and self.company_id.id != self.env.user.partner_id.company_id.id:
             raise UserError(
                 _('Unable to process XML from company other than %s with RFC %s') % (
-                    self.env.user.partner_id.company_id.name, self.env.user.partner_id.company_id.vat))
+                self.env.user.partner_id.company_id.name, self.env.user.partner_id.company_id.vat))
 
         if not self.partner_id:
             raise UserError(
@@ -377,8 +375,7 @@ class EdiImport(models.TransientModel):
                             tax = concept_tax_section.Traslados.Traslado[0]
                             tasa = float(tax.attrib['TasaOCuota']) * 100
 
-                            tax_item = AccountTax.search([('amount', '=', tasa), ('type_tax_use', '=', 'sale')],
-                                                         limit=1)
+                            tax_item = AccountTax.search([('amount', '=', tasa), ('type_tax_use', '=', 'sale')], limit=1)
 
                             if tax_item.id:
                                 tax_ids.append(tax_item.id)
