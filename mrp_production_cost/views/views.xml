@@ -1,0 +1,27 @@
+<odoo>
+    <data>
+
+        <record id="mrp_production_form_view_inherit" model="ir.ui.view">
+            <field name="name">mrp.production.form</field>
+            <field name="model">mrp.production</field>
+            <field name="inherit_id" ref="mrp.mrp_production_form_view"/>
+            <field name="arch" type="xml">
+
+                <xpath expr="//field[@name='move_raw_ids']" position="after">
+                    <group class="oe_subtotal_footer oe_right" colspan="2" name="sale_total">
+                        <field name="currency_id" invisible="1" />
+                        <field name="total_reserved_price" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                        <field name="total_pending_price" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                        <div class="oe_subtotal_footer_separator oe_inline o_td_label">
+                            <label for="total_production_price"/>
+                        </div>
+                        <field name="total_production_price" nolabel="1" class="oe_subtotal_footer_separator" widget="monetary"
+                               options="{'currency_field': 'currency_id'}"/>
+                    </group>
+                </xpath>
+
+            </field>
+        </record>
+
+    </data>
+</odoo>

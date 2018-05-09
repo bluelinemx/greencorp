@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="mrp_production_cost_report">
+        <t t-call="web.html_container">
+
+            <t t-foreach="lines" t-as="line">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <t t-set="currency" t-value="line['currency']"/>
+                        <h1>
+                            <t t-esc="line['name']"/>
+                        </h1>
+                        <br/>
+                        <b>
+                            <t t-esc="line['product_uom_qty']"/>
+                            <t t-esc="line['product_uom'].name"/>
+                        </b>
+                        <table>
+                            <tbody>
+                                <tr t-foreach="line['attributes']" t-as="attrib">
+                                    <td>
+                                        <span t-esc="attrib[0]"/>
+                                    </td>
+                                    <td>
+                                        <span t-esc="attrib[1]"/>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <t t-set="reserved_lines" t-value="[row for row in line['lines'] if row['reserved_qty'] > 0]"/>
+                        <t t-set="required_lines" t-value="[row for row in line['lines'] if row['pending_qty']  > 0]"/>
+
+                        <t t-if="required_lines">
+                            <h3>Required Materials</h3>
+                            <table class="table table-condensed">
+                                <thead>
+                                    <tr>
+                                        <th>Reference</th>
+                                        <th colspan="3">Raw Materials</th>
+                                        <th class="col-sm-2 text-right">Quantity</th>
+                                        <th class="col-sm-2 text-right">Unit Cost</th>
+                                        <th class="col-sm-2 text-right">Total Cost</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-set="required_total" t-value="0"/>
+
+                                    <tr t-foreach="required_lines" t-as="bom_line">
+                                        <td>
+                                            <span t-field="bom_line['product_id'].default_code"/>
+                                        </td>
+                                        <td colspan="3">
+                                            <span t-att-res-id="bom_line['product_id'].id" res-model="product.product"
+                                                  view-type="form" t-esc="bom_line['product_id'].name"/>
+                                        </td>
+                                        <td class="text-right">
+                                            <span t-esc="bom_line['pending_qty']"/>
+                                            <span t-esc="bom_line['product_uom'].name" groups="product.group_uom"/>
+                                        </td>
+                                        <td class="text-right">
+                                            <span t-esc="bom_line['price_unit']"
+                                                  t-options='{"widget": "monetary", "display_currency": currency}'/>
+                                        </td>
+                                        <td class="text-right">
+                                            <span t-esc="bom_line['total_pending_price']"
+                                                  t-options='{"widget": "monetary", "display_currency": currency}'/>
+                                        </td>
+                                        <t t-set="required_total"
+                                           t-value="required_total + bom_line['total_pending_price']"/>
+                                    </tr>
+                                    <tr>
+                                        <th colspan="6" class="text-right">Total Required Components</th>
+                                        <th class="text-right">
+                                            <span t-esc="required_total"
+                                                  t-options='{"widget": "monetary", "display_currency": currency}'/>
+                                        </th>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </t>
+
+
+                        <t t-if="reserved_lines">
+                            <h3>Reserved Materials</h3>
+                            <table class="table table-condensed">
+                                <thead>
+                                    <tr>
+                                        <th>Reference</th>
+                                        <th colspan="3">Raw Materials</th>
+                                        <th class="col-sm-2 text-right">Quantity</th>
+                                        <th class="col-sm-2 text-right">Unit Cost</th>
+                                        <th class="col-sm-2 text-right">Total Cost</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-set="reserved_total" t-value="0"/>
+
+                                    <tr t-foreach="reserved_lines" t-as="bom_line">
+                                        <td>
+                                            <span t-field="bom_line['product_id'].default_code"/>
+                                        </td>
+                                        <td colspan="3">
+                                            <span t-att-res-id="bom_line['product_id'].id" res-model="product.product"
+                                                  view-type="form" t-esc="bom_line['product_id'].name"/>
+                                        </td>
+                                        <td class="text-right">
+                                            <span t-esc="bom_line['reserved_qty']"/>
+                                            <span t-esc="bom_line['product_uom'].name" groups="product.group_uom"/>
+                                        </td>
+                                        <td class="text-right">
+                                            <span t-esc="bom_line['price_unit']"
+                                                  t-options='{"widget": "monetary", "display_currency": currency}'/>
+                                        </td>
+                                        <td class="text-right">
+                                            <span t-esc="bom_line['total_reserved_price']"
+                                                  t-options='{"widget": "monetary", "display_currency": currency}'/>
+                                        </td>
+                                        <t t-set="reserved_total"
+                                           t-value="reserved_total + bom_line['total_reserved_price']"/>
+                                    </tr>
+                                    <tr>
+                                        <th colspan="6" class="text-right">Total Reserved Components</th>
+                                        <th class="text-right">
+                                            <span t-esc="reserved_total"
+                                                  t-options='{"widget": "monetary", "display_currency": currency}'/>
+                                        </th>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </t>
+
+                        <div class="row mt32">
+                            <div class="col-xs-4 pull-right">
+                                <table class="table table-condensed">
+                                    <tr class="border-black">
+                                        <td>
+                                            <strong>Required</strong>
+                                        </td>
+                                        <td class="text-right">
+                                            <span t-esc="line['total_pending_price']"
+                                                  t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Reserved</td>
+                                        <td class="text-right">
+                                            <span t-esc="line['total_reserved_price']"
+                                                  t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                        </td>
+                                    </tr>
+                                    <tr class="border-black">
+                                        <td>
+                                            <strong>Total</strong>
+                                        </td>
+                                        <td class="text-right">
+                                            <span t-esc="line['total']"
+                                                  t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

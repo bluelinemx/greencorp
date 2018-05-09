@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <report
+            string="Production Cost"
+            id="action_report_production_price"
+            model="mrp.production"
+            name="mrp_production_cost.mrp_production_cost_report"
+            file="mrp_production_cost.mrp_production_cost_report"
+            report_type="qweb-html"
+            print_report_name="'Production Cost - %s' % (object.product_id.name or object.product_tmpl_id.name or '')"
+        />
+    </data>
+</odoo>
