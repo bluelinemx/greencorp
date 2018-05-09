@@ -23,7 +23,7 @@
     # always loaded
     'data': [
         # 'security/ir.model.access.csv',
-        'views/templates.xml',
+        'views/views.xml',
 
         'report/mrp_production_cost_report_templates.xml',
         'report/mrp_report_views_main.xml',
