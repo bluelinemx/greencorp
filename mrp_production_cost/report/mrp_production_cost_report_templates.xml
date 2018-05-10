@@ -88,6 +88,7 @@
                                     <tr>
                                         <th>Reference</th>
                                         <th colspan="3">Raw Materials</th>
+                                        <th groups="stock.group_production_lot">Lots</th>
                                         <th class="col-sm-2 text-right">Quantity</th>
                                         <th class="col-sm-2 text-right">Unit Cost</th>
                                         <th class="col-sm-2 text-right">Total Cost</th>
@@ -103,6 +104,9 @@
                                         <td colspan="3">
                                             <span t-att-res-id="bom_line['product_id'].id" res-model="product.product"
                                                   view-type="form" t-esc="bom_line['product_id'].name"/>
+                                        </td>
+                                        <td class="text-right" groups="stock.group_production_lot">
+                                            <span t-esc="bom_line['lot_names']"></span>
                                         </td>
                                         <td class="text-right">
                                             <span t-esc="bom_line['reserved_qty']"/>
@@ -120,7 +124,7 @@
                                            t-value="reserved_total + bom_line['total_reserved_price']"/>
                                     </tr>
                                     <tr>
-                                        <th colspan="6" class="text-right">Total Reserved Components</th>
+                                        <th colspan="7" class="text-right">Total Reserved Components</th>
                                         <th class="text-right">
                                             <span t-esc="reserved_total"
                                                   t-options='{"widget": "monetary", "display_currency": currency}'/>

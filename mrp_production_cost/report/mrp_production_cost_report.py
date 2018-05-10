@@ -37,8 +37,11 @@ class MrpProductionCost(models.AbstractModel):
 
                 price_uom = move.product_uom._compute_price(product.standard_price, move.product_uom)
 
+                lot_names = ','.join([lot for lot in move.active_move_line_ids.mapped('lot_id').mapped('name') if lot is not False])
+
                 line = {
                     'product_id': product,
+                    'lot_names': lot_names,
                     'product_uom_qty': move.product_qty,
                     'reserved_qty': move.reserved_availability,
                     'pending_qty': move.product_qty - move.reserved_availability,
