@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
-
+from collections import OrderedDict
 from odoo import api, models
 
 
@@ -11,7 +11,8 @@ class MrpProductionCost(models.AbstractModel):
     def get_data(self, productions):
 
         data = {
-            'lines': [],
+            'orders': [],
+            'lines': OrderedDict(),
             'total': 0,
             'reserved_price': 0,
             'pending_price': 0,
@@ -76,6 +77,16 @@ class MrpProductionCost(models.AbstractModel):
                     'total_pending_price': price_uom * (move.product_qty - move.reserved_availability),
                 }
 
+                if not data['lines'].get(product.id):
+                    data['lines'][product.id] = dict(line)
+                else:
+                    data['lines'][product.id]['product_uom_qty'] += line['product_uom_qty']
+                    data['lines'][product.id]['reserved_qty'] += line['reserved_qty']
+                    data['lines'][product.id]['pending_qty'] += line['pending_qty']
+                    data['lines'][product.id]['total_price'] += line['total_price']
+                    data['lines'][product.id]['total_reserved_price'] += line['total_reserved_price']
+                    data['lines'][product.id]['total_pending_price'] += line['total_pending_price']
+
                 product_line['lines'] += [line]
 
                 product_line['total'] += line['total_price']
@@ -89,7 +100,8 @@ class MrpProductionCost(models.AbstractModel):
 
             product_lines += [product_line]
 
-        data['lines'] = product_lines
+        data['orders'] = product_lines
+        data['lines'] = data['lines'].values()
 
         return data
 

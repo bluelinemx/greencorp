@@ -3,21 +3,21 @@
     <template id="mrp_production_cost_report">
         <t t-call="web.html_container">
 
-            <t t-foreach="lines" t-as="line">
+            <t t-foreach="orders" t-as="order">
                 <t t-call="web.external_layout">
                     <div class="page">
-                        <t t-set="currency" t-value="line['currency']"/>
+                        <t t-set="currency" t-value="order['currency']"/>
                         <h1>
-                            <t t-esc="line['name']"/>
+                            <t t-esc="order['name']"/>
                         </h1>
                         <br/>
                         <b>
-                            <t t-esc="line['product_uom_qty']"/>
-                            <t t-esc="line['product_uom'].name"/>
+                            <t t-esc="order['product_uom_qty']"/>
+                            <t t-esc="order['product_uom'].name"/>
                         </b>
                         <table>
                             <tbody>
-                                <tr t-foreach="line['attributes']" t-as="attrib">
+                                <tr t-foreach="order['attributes']" t-as="attrib">
                                     <td>
                                         <span t-esc="attrib[0]"/>
                                     </td>
@@ -28,8 +28,9 @@
                             </tbody>
                         </table>
 
-                        <t t-set="reserved_lines" t-value="[row for row in line['lines'] if row['reserved_qty'] > 0]"/>
-                        <t t-set="required_lines" t-value="[row for row in line['lines'] if row['pending_qty']  > 0]"/>
+
+                        <t t-set="required_lines" t-value="[row for row in order['lines'] if row['pending_qty'] > 0]"/>
+                        <t t-set="reserved_lines" t-value="[row for row in order['lines'] if row['reserved_qty'] > 0]"/>
 
                         <t t-if="required_lines">
                             <h3>Required Materials</h3>
@@ -142,14 +143,14 @@
                                             <strong>Required</strong>
                                         </td>
                                         <td class="text-right">
-                                            <span t-esc="line['total_pending_price']"
+                                            <span t-esc="order['total_pending_price']"
                                                   t-options="{'widget': 'monetary', 'display_currency': currency}"/>
                                         </td>
                                     </tr>
                                     <tr>
                                         <td>Reserved</td>
                                         <td class="text-right">
-                                            <span t-esc="line['total_reserved_price']"
+                                            <span t-esc="order['total_reserved_price']"
                                                   t-options="{'widget': 'monetary', 'display_currency': currency}"/>
                                         </td>
                                     </tr>
@@ -158,7 +159,7 @@
                                             <strong>Total</strong>
                                         </td>
                                         <td class="text-right">
-                                            <span t-esc="line['total']"
+                                            <span t-esc="order['total']"
                                                   t-options="{'widget': 'monetary', 'display_currency': currency}"/>
                                         </td>
                                     </tr>
@@ -170,9 +171,11 @@
                 </t>
             </t>
 
-            <t t-if="len(lines)>1">
+            <t t-if="len(orders)>1">
                 <t t-call="web.external_layout">
                     <div class="page">
+
+                        <t t-set="required_lines" t-value="[row for row in lines if row['pending_qty'] > 0]"/>
 
                         <h3>Production Totals</h3>
                             <table class="table table-condensed">
@@ -181,14 +184,14 @@
                                         <th>Reference</th>
                                         <th colspan="3">Product</th>
                                         <th class="col-sm-2 text-right">Quantity</th>
+                                        <th class="col-sm-2 text-right">Required Quantity</th>
                                         <th class="col-sm-2 text-right">Required Price</th>
-                                        <th class="col-sm-2 text-right">Reserved Price</th>
                                         <th class="col-sm-2 text-right">Total Cost</th>
                                     </tr>
                                 </thead>
                                 <tbody>
 
-                                    <tr t-foreach="lines" t-as="line">
+                                    <tr t-foreach="required_lines" t-as="line">
                                         <td>
                                             <span t-field="line['product_id'].default_code"/>
                                         </td>
@@ -201,15 +204,15 @@
                                             <span t-esc="line['product_uom'].name" groups="product.group_uom"/>
                                         </td>
                                         <td class="text-right">
+                                            <span t-esc="line['pending_qty']"/>
+                                            <span t-esc="line['product_uom'].name" groups="product.group_uom"/>
+                                        </td>
+                                        <td class="text-right">
                                             <span t-esc="line['total_pending_price']"
                                                   t-options='{"widget": "monetary", "display_currency": currency}'/>
                                         </td>
                                         <td class="text-right">
-                                            <span t-esc="line['total_reserved_price']"
-                                                  t-options='{"widget": "monetary", "display_currency": currency}'/>
-                                        </td>
-                                        <td class="text-right">
-                                            <span t-esc="line['total']"
+                                            <span t-esc="line['total_price']"
                                                   t-options='{"widget": "monetary", "display_currency": currency}'/>
                                         </td>
                                     </tr>
