@@ -25,7 +25,7 @@ class MrpProduction(models.Model):
 
         if result:
 
-            data = result[0]
+            data = result['orders'][0]
 
             self.total_production_price = data.get('total')
             self.total_reserved_price = data.get('total_reserved_price')
