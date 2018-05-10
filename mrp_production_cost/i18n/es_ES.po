@@ -1,0 +1,173 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* mrp_production_cost
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 11.0+e-20171101\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-05-10 18:37-0400\n"
+"PO-Revision-Date: 2018-05-10 18:44-0400\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Poedit 1.8.7.1\n"
+"Last-Translator: \n"
+"Language: es_ES\n"
+
+#. module: mrp_production_cost
+#: model:ir.ui.view,arch_db:mrp_production_cost.mrp_production_cost_report
+msgid "<strong>Required</strong>"
+msgstr "<strong>Requerido</strong>"
+
+#. module: mrp_production_cost
+#: model:ir.ui.view,arch_db:mrp_production_cost.mrp_production_cost_report
+msgid "<strong>Total</strong>"
+msgstr "<strong>Total</strong>"
+
+#. module: mrp_production_cost
+#: model:ir.model.fields,field_description:mrp_production_cost.field_mrp_production_currency_id
+msgid "Currency"
+msgstr "Moneda"
+
+#. module: mrp_production_cost
+#: model:ir.model.fields,field_description:mrp_production_cost.field_report_mrp_production_cost_mrp_production_cost_report_display_name
+msgid "Display Name"
+msgstr "Nombre a Mostrar"
+
+#. module: mrp_production_cost
+#: model:ir.model.fields,field_description:mrp_production_cost.field_report_mrp_production_cost_mrp_production_cost_report_id
+msgid "ID"
+msgstr "ID"
+
+#. module: mrp_production_cost
+#: model:ir.model.fields,field_description:mrp_production_cost.field_report_mrp_production_cost_mrp_production_cost_report___last_update
+msgid "Last Modified on"
+msgstr "Fecha de Última Modificación"
+
+#. module: mrp_production_cost
+#: model:ir.ui.view,arch_db:mrp_production_cost.mrp_production_cost_report
+msgid "Lots"
+msgstr "Lotes"
+
+#. module: mrp_production_cost
+#: model:ir.model,name:mrp_production_cost.model_mrp_production
+msgid "Manufacturing Order"
+msgstr "Orden de Manufactura"
+
+#. module: mrp_production_cost
+#: model:ir.ui.view,arch_db:mrp_production_cost.mrp_production_cost_report
+msgid "Product"
+msgstr "Producto"
+
+#. module: mrp_production_cost
+#: model:ir.actions.report,name:mrp_production_cost.action_report_production_price
+msgid "Production Cost"
+msgstr "Costo de Producción"
+
+#. module: mrp_production_cost
+#: model:ir.ui.view,arch_db:mrp_production_cost.mrp_production_cost_report
+msgid "Production Totals"
+msgstr "Totales de Producción"
+
+#. module: mrp_production_cost
+#: model:ir.ui.view,arch_db:mrp_production_cost.mrp_production_cost_report
+msgid "Quantity"
+msgstr "Cantidad"
+
+#. module: mrp_production_cost
+#: model:ir.ui.view,arch_db:mrp_production_cost.mrp_production_cost_report
+msgid "Raw Materials"
+msgstr "Materias Primas"
+
+#. module: mrp_production_cost
+#: model:ir.ui.view,arch_db:mrp_production_cost.mrp_production_cost_report
+msgid "Reference"
+msgstr "Referencia"
+
+#. module: mrp_production_cost
+#: model:ir.ui.view,arch_db:mrp_production_cost.mrp_production_cost_report
+msgid "Required Materials"
+msgstr "Materiales Requeridos"
+
+#. module: mrp_production_cost
+#: model:ir.ui.view,arch_db:mrp_production_cost.mrp_production_cost_report
+msgid "Required Price"
+msgstr "Precio Requerido"
+
+#. module: mrp_production_cost
+#: model:ir.ui.view,arch_db:mrp_production_cost.mrp_production_cost_report
+msgid "Required Quantity"
+msgstr "Cantidad Requerido"
+
+#. module: mrp_production_cost
+#: model:ir.ui.view,arch_db:mrp_production_cost.mrp_production_cost_report
+msgid "Reserved"
+msgstr "Requerido"
+
+#. module: mrp_production_cost
+#: model:ir.ui.view,arch_db:mrp_production_cost.mrp_production_cost_report
+msgid "Reserved Materials"
+msgstr "Materiales Reservados"
+
+#. module: mrp_production_cost
+#: model:ir.ui.view,arch_db:mrp_production_cost.mrp_production_cost_report
+msgid "Reserved Price"
+msgstr "Precio Reservados"
+
+#. module: mrp_production_cost
+#: model:ir.ui.view,arch_db:mrp_production_cost.mrp_production_cost_report
+msgid "Reserved Quantity"
+msgstr "Cantidad Reservados"
+
+#. module: mrp_production_cost
+#: model:ir.ui.view,arch_db:mrp_production_cost.mrp_production_cost_report
+msgid "Total Cost"
+msgstr "Costo Total"
+
+#. module: mrp_production_cost
+#: model:ir.model.fields,field_description:mrp_production_cost.field_mrp_production_total_pending_price
+msgid "Total Pending Price"
+msgstr "Precio Pendiente Total"
+
+#. module: mrp_production_cost
+#: model:ir.model.fields,field_description:mrp_production_cost.field_mrp_production_total_production_price
+msgid "Total Price"
+msgstr "Precio Total"
+
+#. module: mrp_production_cost
+#: model:ir.ui.view,arch_db:mrp_production_cost.mrp_production_cost_report
+msgid "Total Required Components"
+msgstr "Total de Componentes Requeridos"
+
+#. module: mrp_production_cost
+#: model:ir.ui.view,arch_db:mrp_production_cost.mrp_production_cost_report
+msgid "Total Reserved Components"
+msgstr "Total de Componentes Reservados"
+
+#. module: mrp_production_cost
+#: model:ir.model.fields,field_description:mrp_production_cost.field_mrp_production_total_reserved_price
+msgid "Total Reserved Price"
+msgstr "Precio Reservado Total"
+
+#. module: mrp_production_cost
+#: model:ir.model.fields,field_description:mrp_production_cost.field_mrp_production_production_unit_price
+msgid "Total Unit Price"
+msgstr "Precio Unitario Total"
+
+#. module: mrp_production_cost
+#: model:ir.ui.view,arch_db:mrp_production_cost.mrp_production_cost_report
+msgid "Unit Cost"
+msgstr "Precio Unitario"
+
+#. module: mrp_production_cost
+#: model:ir.model,name:mrp_production_cost.model_report_mrp_mrp_production_cost_report
+msgid "report.mrp.mrp_production_cost_report"
+msgstr ""
+
+#. module: mrp_production_cost
+#: model:ir.model,name:mrp_production_cost.model_report_mrp_production_cost_mrp_production_cost_report
+msgid "report.mrp_production_cost.mrp_production_cost_report"
+msgstr ""
