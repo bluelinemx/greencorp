@@ -69,8 +69,8 @@ msgstr "Costo de Producción"
 
 #. module: mrp_production_cost
 #: model:ir.ui.view,arch_db:mrp_production_cost.mrp_production_cost_report
-msgid "Production Totals"
-msgstr "Totales de Producción"
+msgid "Required Totals"
+msgstr "Totales Requeridos"
 
 #. module: mrp_production_cost
 #: model:ir.ui.view,arch_db:mrp_production_cost.mrp_production_cost_report
@@ -86,6 +86,11 @@ msgstr "Materias Primas"
 #: model:ir.ui.view,arch_db:mrp_production_cost.mrp_production_cost_report
 msgid "Reference"
 msgstr "Referencia"
+
+#. module: mrp_production_cost
+#: model:ir.ui.view,arch_db:mrp_production_cost.mrp_production_cost_report
+msgid "Required"
+msgstr "Requerido"
 
 #. module: mrp_production_cost
 #: model:ir.ui.view,arch_db:mrp_production_cost.mrp_production_cost_report
@@ -105,7 +110,7 @@ msgstr "Cantidad Requerido"
 #. module: mrp_production_cost
 #: model:ir.ui.view,arch_db:mrp_production_cost.mrp_production_cost_report
 msgid "Reserved"
-msgstr "Requerido"
+msgstr "Reservados"
 
 #. module: mrp_production_cost
 #: model:ir.ui.view,arch_db:mrp_production_cost.mrp_production_cost_report
