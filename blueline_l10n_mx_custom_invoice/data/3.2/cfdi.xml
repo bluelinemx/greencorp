@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <template id="cfdiv32" inherit_id="l10n_mx_edi.cfdiv32">
+            <xpath expr="//*[local-name() = 'Concepto']" position="attributes">
+                <attribute name="t-att-noIdentificacion">record._get_string_cfdi('{=}'.join([line.product_id.default_code, line.client_identification_number]) or '', 100)</attribute>
+            </xpath>
+        </template>
+    </data>
+</odoo>
