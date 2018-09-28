@@ -1,0 +1,19 @@
+<odoo>
+    <data>
+        <record id="l10n_mx_edi_bulk_xml_import_wizard_menu" model="ir.actions.act_window">
+            <field name="name">EDI XML Bulk Import</field>
+            <field name="res_model">l10n.mx.edi.bulk.import.wizard</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="bulk_import_wizard_form"/>
+            <field name="target">new</field>
+        </record>
+
+        <menuitem id="l10n_mx_edi_bulk_xml_import_wizard_action" name="Import Vendor XML"
+                  action="l10n_mx_edi_bulk_xml_import_wizard_menu" parent="account.menu_finance_payables_master_data"
+                  sequence="10"
+                  groups="account.group_account_manager"
+        />
+
+    </data>
+</odoo>
