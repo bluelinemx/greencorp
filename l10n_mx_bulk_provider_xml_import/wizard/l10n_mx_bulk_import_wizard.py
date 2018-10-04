@@ -26,6 +26,7 @@ class EdiBulkImportFile(models.TransientModel):
         ('InvalidCurrencyError', 'Invalid Currency'),
         ('MissingPartnerError', 'Missing Provider'),
         ('InvalidProductLinesError', 'Invalid Products'),
+        ('MissingRelatedUUIDError', 'Missing Invoice'),
     ], string='Error Code')
 
     error_description = fields.Char('Error Description')

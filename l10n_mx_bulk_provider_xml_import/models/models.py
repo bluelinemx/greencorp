@@ -156,6 +156,7 @@ class EdiImport(models.TransientModel):
     l10n_mx_edi_sat_status = fields.Char(default='none')
     l10n_mx_edi_cfdi_name = fields.Char()
     l10n_mx_edi_cfdi_uuid = fields.Char('UUID')
+    refund_invoice_id = fields.Many2one('account.invoice', 'Refunded Invoice', compute='_compute_refunded_invoice', ondelete='CASCADE')
     l10n_mx_edi_redunded_invoice_cfdi_uuid = fields.Char('UUID')
     l10n_mx_edi_cfdi = fields.Char("CFDI")
     l10n_mx_edi_cfdi_supplier_rfc = fields.Char('RFC')
@@ -227,6 +228,11 @@ class EdiImport(models.TransientModel):
                     item.partner_shipping_id = addr and addr.get('delivery')
             else:
                 item.partner_id = False
+
+    @api.one
+    @api.depends('l10n_mx_edi_redunded_invoice_cfdi_uuid')
+    def _compute_refunded_invoice(self):
+        self.refund_invoice_id = self.env['account.invoice'].sudo().search([('l10n_mx_cfdi_uuid', '=', self.l10n_mx_edi_redunded_invoice_cfdi_uuid)]).id if self.invoice_type == 'in_refund' else False
 
     @api.multi
     def action_validate(self, refresh=False):
@@ -312,10 +318,6 @@ class EdiImport(models.TransientModel):
         for line in self.tax_line_ids:
             tax_lines.append((0, 0, self.get_invoice_tax_line_values_from_tax_line(line)))
 
-        refunded_invoice = False
-        if self.invoice_type == 'in_refund' and self.l10n_mx_edi_redunded_invoice_cfdi_uuid:
-            refunded_invoice = self.env['account.invoice'].sudo().search([('l10n_mx_cfdi_uuid', '=', self.l10n_mx_edi_redunded_invoice_cfdi_uuid)])
-
         return {
             'type': self.invoice_type,
             'state': self.invoice_state,
@@ -347,8 +349,8 @@ class EdiImport(models.TransientModel):
             'amount_total_signed': amount_total_signed,
             'amount_total_company_signed': amount_total_company_signed,
 
-            'refund_invoice_id': refunded_invoice.id if refunded_invoice is not False else False,
-            'origin': refunded_invoice.number if refunded_invoice is not False else False
+            'refund_invoice_id': self.refund_invoice_id.id if self.refund_invoice_id is not False else False,
+            'origin': self.refund_invoice_id.number if self.refund_invoice_id is not False else False
         }
 
     def create_invoice(self):
@@ -481,6 +483,18 @@ class EdiImport(models.TransientModel):
                             tax_lines.append((0, 0, line))
 
                     self.tax_line_ids = tax_lines
+
+        if self.invoice_type == 'in_refund':
+            # cfdi: CfdiRelacionados
+            related_section = getattr(xml, 'CfdiRelacionados', False)
+
+            if isinstance(related_section, ObjectifiedElement):
+                self.l10n_mx_edi_redunded_invoice_cfdi_uuid = related_section.CfdiRelacionado.attrib.get('UUID')
+
+                if not self.refund_invoice_id.id:
+                    raise MissingRelatedUUIDError(_('Missing Related UUID %s in XML') % (
+                            self.l10n_mx_edi_redunded_invoice_cfdi_uuid,),
+                        uuid=self.l10n_mx_edi_redunded_invoice_cfdi_uuid)
 
         if self.l10n_mx_edi_cfdi_uuid:
             uuid_search = self.env['account.invoice'].sudo().search([('l10n_mx_cfdi_uuid', '=', self.l10n_mx_edi_cfdi_uuid)])
@@ -629,6 +643,12 @@ class InvalidCurrencyError(UserError):
 class DuplicateUUIDError(UserError):
     def __init__(self, msg, uuid):
         super(DuplicateUUIDError, self).__init__(msg)
+        self.uuid = uuid
+
+
+class MissingRelatedUUIDError(UserError):
+    def __init__(self, msg, uuid):
+        super(MissingRelatedUUIDError, self).__init__(msg)
         self.uuid = uuid
 
 
