@@ -355,7 +355,13 @@ class EdiImport(models.TransientModel):
 
     def create_invoice(self):
         inv_obj = self.env['account.invoice']
-        invoice = inv_obj.create(self.get_invoice_creation_values())
+
+        values = self.get_invoice_creation_values()
+
+        invoice = inv_obj.with_context({
+            'type': values.get('type', 'out_invoice'),
+            'default_type': values.get('type', 'out_invoice'),
+        }).create(values)
 
         filename = ('%s-%s-MX-Invoice-%s.xml' % (
             invoice.journal_id.code, invoice.reference, self.version.replace('.', '-'))).replace('/', '')
