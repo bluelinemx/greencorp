@@ -2,8 +2,8 @@
 <odoo>
     <data>
         <record id="bulk_import_wizard_form" model="ir.ui.view">
-            <field name="name">l10n.mx.edi.bulk.import.wizard.xml.import.form</field>
-            <field name="model">l10n.mx.edi.bulk.import.wizard</field>
+            <field name="name">l10n.mx.xml.bulk.import.wizard.xml.import.form</field>
+            <field name="model">l10n.mx.xml.bulk.import.wizard</field>
             <field name="arch" type="xml">
                 <form string="">
                     <sheet>
@@ -20,8 +20,8 @@
         </record>
 
         <record id="bulk_import_wizard_preview_form" model="ir.ui.view">
-            <field name="name">l10n.mx.edi.bulk.import.wizard.preview.form</field>
-            <field name="model">l10n.mx.edi.bulk.import.wizard</field>
+            <field name="name">l10n.mx.xml.bulk.import.wizard.preview.form</field>
+            <field name="model">l10n.mx.xml.bulk.import.wizard</field>
             <field name="arch" type="xml">
                 <form string="">
                     <sheet>
@@ -39,6 +39,7 @@
                                 <field name="file_ids" mode="tree" nolabel="1" widget="one2many_list">
                                     <tree create="false" delete="true">
                                         <field name="xml_filename" readonly="1"/>
+                                        <field name="invoice_type" readonly="1"/>
                                         <field name="name" readonly="1"/>
                                         <field name="l10n_mx_edi_cfdi_uuid" readonly="1"/>
                                         <field name="l10n_mx_edi_cfdi_customer_rfc" readonly="1" string="Partner RFC"/>
@@ -50,6 +51,8 @@
                                         <sheet>
                                             <group>
                                                 <group>
+                                                    <field name="invoice_type" readonly="1"/>
+
                                                     <field name="company_id" readonly="1" widget="selection"
                                                            options="{'no_open': True, 'no_create': True}"/>
 
@@ -57,6 +60,7 @@
                                                            context="{'default_supplier': 1, 'default_vat': l10n_mx_edi_cfdi_customer_rfc, 'default_name': l10n_mx_edi_cfdi_customer_name, 'default_company_type': 'company'}"/>
 
                                                     <field name="name" readonly="1" string="Vendor Reference"/>
+
 
                                                     <field name="payment_term_id" readonly="1"/>
                                                     <field name="l10n_mx_edi_usage" readonly="1"/>
@@ -104,9 +108,10 @@
                                                             <field name="currency_id" invisible="1"/>
                                                             <field name="product_code" readonly="1"/>
                                                             <field name="has_product" invisible="1"/>
+                                                            <field name="l10n_mx_edi_code_sat_id" invisible="1"/>
                                                             <field name="product_id"
                                                                    attrs="{'readonly': [('has_product', '=', True)]}"
-                                                                   context="{'default_default_code': product_code, 'default_name': product_description, 'default_lst_price': price_unit}"/>
+                                                                   context="{'default_default_code': product_code, 'default_l10n_mx_edi_code_sat_id': l10n_mx_edi_code_sat_id, 'default_name': product_description, 'default_lst_price': price_unit}"/>
                                                             <!--<field name="product_id"-->
                                                                    <!--attrs="{'readonly': [('has_product', '=', True)]}"-->
                                                                    <!--context="{'default_default_code': product_code, 'default_l10n_mx_edi_code_sat_id': product_code, 'default_name': product_description, 'default_lst_price': price_unit}"/>-->
@@ -176,8 +181,8 @@
         </record>
 
         <record id="bulk_import_wizard_results_form" model="ir.ui.view">
-            <field name="name">l10n.mx.edi.bulk.import.wizard.results.form</field>
-            <field name="model">l10n.mx.edi.bulk.import.wizard</field>
+            <field name="name">l10n.mx.xml.bulk.import.wizard.results.form</field>
+            <field name="model">l10n.mx.xml.bulk.import.wizard</field>
             <field name="arch" type="xml">
                 <form string="">
                     <sheet>
@@ -186,10 +191,11 @@
                                 <field name="file_ids" mode="tree" nolabel="1" widget="one2many_list">
                                     <tree create="false" delete="true">
                                         <field name="xml_filename" readonly="1"/>
+                                        <field name="invoice_type" readonly="1"/>
                                         <field name="name" readonly="1"/>
                                         <field name="invoice_id" readonly="1"/>
                                         <field name="l10n_mx_edi_cfdi_uuid" readonly="1"/>
-                                        <field name="l10n_mx_edi_cfdi_customer_rfc" readonly="1" string="Partner RFC"/>
+                                        <field name="l10n_mx_edi_cfdi_customer_rfc" readonly="1" string="Provider RFC"/>
                                         <field name="amount_total" readonly="1" widget="monetary"/>
                                         <field name="currency_code" readonly="1" string="Currency"/>
                                         <field name="state" readonly="1"/>

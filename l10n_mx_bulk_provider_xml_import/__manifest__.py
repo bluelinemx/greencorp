@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 {
-    'name': "Mexico EDI Bulk Invoice Import",
+    'name': "Mexico Bulk Provider XML Invoice Import",
 
     'summary': """
-        Allow to import multiple edi xml files into invoices""",
+        Mexico Bulk Provider XML Invoice Import""",
 
     'description': """
-        Allow to import multiple edi xml files into invoices
+        Allow to import multiple provider xml files into vendor bills
     """,
 
     'author': "Yusnel Rojas Garcia",
@@ -19,7 +19,7 @@
 
     'data': [
         # 'security/ir.model.access.csv',
-        'wizard/l10n_mx_edi_bulk_import_wizard_view.xml',
+        'wizard/l10n_mx_bulk_import_wizard_view.xml',
         'views/views.xml',
         'views/templates.xml',
     ]

@@ -15,9 +15,9 @@ EDI_NAMESPACES = {
 
 
 class EdiImportTax(models.TransientModel):
-    _name = 'l10n.mx.edi.import.invoice.tax'
+    _name = 'l10n.mx.provider.xml.bulk.import.invoice.tax'
 
-    import_id = fields.Many2one('l10n.mx.edi.import.invoice', required=True, ondelete='CASCADE')
+    import_id = fields.Many2one('l10n.mx.provider.xml.bulk.import.invoice', required=True, ondelete='CASCADE')
 
     name = fields.Char('Name')
     amount = fields.Float('Amount', digits=(12, 6))
@@ -32,14 +32,15 @@ class EdiImportTax(models.TransientModel):
 
 
 class EdiImportLine(models.TransientModel):
-    _name = 'l10n.mx.edi.import.invoice.line'
+    _name = 'l10n.mx.provider.xml.bulk.import.invoice.line'
 
-    import_id = fields.Many2one('l10n.mx.edi.import.invoice', required=True, ondelete='CASCADE')
+    import_id = fields.Many2one('l10n.mx.provider.xml.bulk.import.invoice', required=True, ondelete='CASCADE')
 
     account_analytic_id = fields.Many2one('account.analytic.account', 'Analytic Account')
     uom_code = fields.Char('Unit of Measure')
     product_code = fields.Char('Product Code')
     l10n_mx_edi_code_sat = fields.Char('SAT Code')
+    l10n_mx_edi_code_sat_id = fields.Many2one('l10n_mx_edi.product.sat.code', string='SAT Code', compute='_compute_sat_code', ondelete='CASCADE')
     has_product = fields.Boolean()
 
     product_id = fields.Many2one('product.product', 'Product', compute='_compute_product', store=True, domain="[('default_code', '=', product_code)]")
@@ -55,22 +56,32 @@ class EdiImportLine(models.TransientModel):
     discount = fields.Float('Discount', digits=(12, 6))
 
     invoice_line_tax_ids = fields.Many2many('account.tax',
-                                            'l10n_mx_edi_import_invoice_line_tax_rel', 'invoice_line_id', 'tax_id',
+                                            'l10n_mx_provider_xml_bulk_import_invoice_line_tax_rel', 'invoice_line_id', 'tax_id',
                                             string='Taxes')
 
     def product_lookup(self):
-        if self.product_code:
+        product = None
+
+        if self.l10n_mx_edi_code_sat is not False and self.product_code is not False:
+            product = self.env['product.product'].search([('l10n_mx_edi_code_sat_id.code', '=', self.l10n_mx_edi_code_sat), ('default_code', '=', self.product_code)])
+        # elif self.l10n_mx_edi_code_sat:
+        #     product = self.env['product.product'].search(
+        #         [('l10n_mx_edi_code_sat_id.code', '=', self.l10n_mx_edi_code_sat)])
+        elif self.product_code is not False or len(self.product_code):
             product = self.env['product.product'].search([('default_code', '=', self.product_code)])
 
-            return product
-
-        return False
+        return product if product and product.id else False
 
     @api.model
     def create(self, values):
         item = super().create(values)
         item._compute_product()
         return item
+
+    @api.one
+    @api.depends('l10n_mx_edi_code_sat')
+    def _compute_sat_code(self):
+        self.l10n_mx_edi_code_sat_id = self.env['l10n_mx_edi.product.sat.code'].sudo().search([('code', '=', self.l10n_mx_edi_code_sat)], limit=1).id
 
     @api.one
     def _compute_product(self):
@@ -92,16 +103,17 @@ def get_xml_value(xml, selector, key):
 
 
 class EdiImport(models.TransientModel):
-    _name = 'l10n.mx.edi.import.invoice'
+    _name = 'l10n.mx.provider.xml.bulk.import.invoice'
 
     xml_filename = fields.Char(string="Filename")
     xml_file = fields.Binary(required=True)
     xml_content = fields.Text(readonly=True)
 
     invoice_type = fields.Selection([
-        ('out_invoice', 'Customer Invoice'),
+        ('in_refund', 'Credit Note'),
         ('in_invoice', 'Vendor Bill'),
-    ], string='Invoice Type', default='out_invoice')
+    ], string='Invoice Type', default='in_invoice')
+
     invoice_state = fields.Selection([
         ('draft', 'Draft'),
         ('done', 'Done'),
@@ -144,6 +156,7 @@ class EdiImport(models.TransientModel):
     l10n_mx_edi_sat_status = fields.Char(default='none')
     l10n_mx_edi_cfdi_name = fields.Char()
     l10n_mx_edi_cfdi_uuid = fields.Char('UUID')
+    l10n_mx_edi_redunded_invoice_cfdi_uuid = fields.Char('UUID')
     l10n_mx_edi_cfdi = fields.Char("CFDI")
     l10n_mx_edi_cfdi_supplier_rfc = fields.Char('RFC')
     l10n_mx_edi_cfdi_supplier_name = fields.Char('Name')
@@ -154,7 +167,7 @@ class EdiImport(models.TransientModel):
     currency_id = fields.Many2one('res.currency', 'Currency', compute='_compute_edi_values', store=True)
     exchange_rate = fields.Float(string='Current Rate', digits=(12, 6))
     company_id = fields.Many2one('res.company', 'Company', compute='_compute_edi_values', domain="[('partner_id.vat', '=', l10n_mx_edi_cfdi_supplier_rfc)]", store=True)
-    partner_id = fields.Many2one('res.partner', 'Client', compute='_compute_edi_values', domain="[('vat', '=', l10n_mx_edi_cfdi_customer_rfc)]", store=True)
+    partner_id = fields.Many2one('res.partner', 'Vendor', compute='_compute_edi_values', domain="[('vat', '=', l10n_mx_edi_cfdi_customer_rfc)]", store=True)
     partner_shipping_id = fields.Many2one('res.partner', string='Delivery Address', compute='_compute_edi_values',
                                           store=True)
     state = fields.Char("State")
@@ -172,8 +185,8 @@ class EdiImport(models.TransientModel):
     amount_tax = fields.Float(string='Taxes', store=True, readonly=True, digits=(12, 6))
     amount_total = fields.Float(string='Total', store=True, readonly=True, digits=(12, 6))
 
-    line_ids = fields.One2many('l10n.mx.edi.import.invoice.line', 'import_id', 'Lines')
-    tax_line_ids = fields.One2many('l10n.mx.edi.import.invoice.tax', 'import_id', 'Tax Lines')
+    line_ids = fields.One2many('l10n.mx.provider.xml.bulk.import.invoice.line', 'import_id', 'Lines')
+    tax_line_ids = fields.One2many('l10n.mx.provider.xml.bulk.import.invoice.tax', 'import_id', 'Tax Lines')
 
     @api.multi
     @api.depends('currency_code', 'payment_term_name', 'fiscal_position_code', 'l10n_mx_edi_cfdi_supplier_rfc',
@@ -216,8 +229,8 @@ class EdiImport(models.TransientModel):
                 item.partner_id = False
 
     @api.multi
-    def action_validate(self):
-        return self.process_xml_file()
+    def action_validate(self, refresh=False):
+        return self.process_xml_file(refresh=refresh)
 
     def validate_import(self):
         invalid = filter(lambda p: not p.product_id, self.line_ids)
@@ -299,20 +312,25 @@ class EdiImport(models.TransientModel):
         for line in self.tax_line_ids:
             tax_lines.append((0, 0, self.get_invoice_tax_line_values_from_tax_line(line)))
 
+        refunded_invoice = False
+        if self.l10n_mx_edi_redunded_invoice_cfdi_uuid:
+            refunded_invoice = self.env['account.invoice'].sudo().search([('l10n_mx_cfdi_uuid', '=', self.l10n_mx_edi_redunded_invoice_cfdi_uuid)])
+
         return {
             'type': self.invoice_type,
             'state': self.invoice_state,
             'reference': self.name,
-            'move_name': "F-/{name}".format(name=self.name),
+            # 'move_name': "F-/{name}".format(name=self.name),
             # 'number': "F-/{name}".format(name=self.name),
             'date_invoice': self.date_invoice,
             'partner_shipping_id': self.partner_shipping_id.id,
             'l10n_mx_edi_usage': self.l10n_mx_edi_usage,
             'l10n_mx_edi_pac_status': self.l10n_mx_edi_pac_status,
             'l10n_mx_edi_sat_status': self.l10n_mx_edi_sat_status,
+            'l10n_mx_cfdi_uuid': self.l10n_mx_edi_cfdi_uuid,
             'l10n_mx_edi_cfdi_supplier_rfc': self.l10n_mx_edi_cfdi_supplier_rfc,
             'l10n_mx_edi_cfdi_customer_rfc': self.l10n_mx_edi_cfdi_customer_rfc,
-            'account_id': self.partner_id.property_account_receivable_id.id,
+            'account_id': self.partner_id.property_account_payable_id.id,
             'partner_id': self.partner_id.id,
             'invoice_line_ids': invoice_lines,
             'tax_line_ids': tax_lines,
@@ -328,6 +346,9 @@ class EdiImport(models.TransientModel):
             'amount_total': amount_total,
             'amount_total_signed': amount_total_signed,
             'amount_total_company_signed': amount_total_company_signed,
+
+            'refund_invoice_id': refunded_invoice.id if refunded_invoice is not False else False,
+            'origin': refunded_invoice.number if refunded_invoice is not False else False
         }
 
     def create_invoice(self):
@@ -374,7 +395,8 @@ class EdiImport(models.TransientModel):
         return action
 
     @api.multi
-    def process_xml_file(self):
+    def process_xml_file(self, refresh=False):
+
         try:
             xml = fromstring(base64.b64decode(self.xml_file))
             self.xml_content = etree.tostring(xml, pretty_print=True)
@@ -388,6 +410,8 @@ class EdiImport(models.TransientModel):
         self.currency_code = xml.attrib.get('Moneda')
         self.exchange_rate = xml.attrib.get('TipoCambio', 1)
         self.l10n_mx_edi_cfdi_amount = float(xml.attrib.get('Total', xml.attrib.get('total', 0)))
+
+        self.invoice_type = 'in_invoice' if xml.attrib.get('TipoDeComprobante', 'I').upper() == 'I' else 'in_refund'
 
         self.amount_untaxed = float(xml.attrib.get('SubTotal', xml.attrib.get('subTotal', 0)))
         self.amount_total = float(xml.attrib.get('Total', xml.attrib.get('total', 0)))
@@ -417,7 +441,7 @@ class EdiImport(models.TransientModel):
 
         concepts_section = getattr(xml, 'Conceptos', False)
 
-        if isinstance(concepts_section, ObjectifiedElement):
+        if refresh is False and isinstance(concepts_section, ObjectifiedElement):
             AccountTax = self.env['account.tax']
 
             lines = []
@@ -440,7 +464,7 @@ class EdiImport(models.TransientModel):
                         importe = float(item.attrib.get('Importe', item.attrib.get('importe', 0)))
                         impuesto = item.attrib.get('Impuesto', item.attrib.get('impuesto', False))
                         tasa = float(item.attrib.get('TasaOCuota', item.attrib.get('tasa', 0))) * 100
-                        tax_item = AccountTax.search([('amount', '=', tasa), ('type_tax_use', '=', 'sale')], limit=1)
+                        tax_item = AccountTax.search([('amount', '=', tasa), ('type_tax_use', '=', 'purchase')], limit=1)
 
                         if tax_item.id:
                             line = {
@@ -458,31 +482,44 @@ class EdiImport(models.TransientModel):
 
                     self.tax_line_ids = tax_lines
 
-            if not self.company_id:
-                raise MissingCompanyError(
-                    _('Unable to find company %s with RFC %s') % (
-                        self.l10n_mx_edi_cfdi_supplier_name, self.l10n_mx_edi_cfdi_supplier_rfc),
-                    name=self.l10n_mx_edi_cfdi_supplier_name, rfc=self.l10n_mx_edi_cfdi_supplier_rfc)
+        if self.l10n_mx_edi_cfdi_uuid:
+            uuid_search = self.env['account.invoice'].sudo().search([('l10n_mx_cfdi_uuid', '=', self.l10n_mx_edi_cfdi_uuid)])
+            if uuid_search:
+                raise DuplicateUUIDError(
+                    _('Duplicated UUID %s') % (
+                        self.l10n_mx_edi_cfdi_uuid,),
+                    uuid=self.l10n_mx_edi_cfdi_uuid)
 
-            # if self.company_id.id != self.env.user.partner_id.company_id.id:
-            if self.company_id.id not in self.env.user.company_ids.mapped('id') + [self.env.user.partner_id.company_id.id]:
-                raise InvalidCompanyError(
-                    _('Unable to process XML from company other than "%s" with RFC "%s". Invoice RFC: "%s".') % (
-                        self.env.user.partner_id.company_id.name, self.env.user.partner_id.company_id.vat,
-                        self.company_id.partner_id.vat),
-                    user_company=self.env.user.partner_id.company_id, invoice_company=self.company_id
-                )
+        if not self.company_id:
+            raise MissingCompanyError(
+                _('Unable to find company %s with RFC %s') % (
+                    self.l10n_mx_edi_cfdi_supplier_name, self.l10n_mx_edi_cfdi_supplier_rfc),
+                name=self.l10n_mx_edi_cfdi_supplier_name, rfc=self.l10n_mx_edi_cfdi_supplier_rfc)
 
-            if not self.partner_id:
-                raise MissingPartnerError(
-                    _('Unable to find client "%s" with RFC "%s".') % (
-                        self.l10n_mx_edi_cfdi_customer_name, self.l10n_mx_edi_cfdi_customer_rfc),
-                    name=self.l10n_mx_edi_cfdi_customer_name, rfc=self.l10n_mx_edi_cfdi_customer_rfc)
+        # if self.company_id.id != self.env.user.partner_id.company_id.id:
+        if self.company_id.id not in self.env.user.company_ids.mapped('id') + [self.env.user.partner_id.company_id.id]:
+            raise InvalidCompanyError(
+                _('Unable to process XML from company other than "%s" with RFC "%s". Invoice RFC: "%s".') % (
+                    self.env.user.partner_id.company_id.name, self.env.user.partner_id.company_id.vat,
+                    self.company_id.partner_id.vat),
+                user_company=self.env.user.partner_id.company_id, invoice_company=self.company_id
+            )
 
-            if not self.currency_id:
-                raise InvalidCurrencyError(
-                    _('Unable to find currency "%s".') % (self.currency_code, ),
-                    currency_code=self.currency_code)
+        if not self.partner_id:
+            raise MissingPartnerError(
+                _('Unable to find client "%s" with RFC "%s".') % (
+                    self.l10n_mx_edi_cfdi_customer_name, self.l10n_mx_edi_cfdi_customer_rfc),
+                name=self.l10n_mx_edi_cfdi_customer_name, rfc=self.l10n_mx_edi_cfdi_customer_rfc)
+
+        if not self.currency_id:
+            raise InvalidCurrencyError(
+                _('Unable to find currency "%s".') % (self.currency_code, ),
+                currency_code=self.currency_code)
+
+        invalid_lines = filter(lambda p: not p.product_id, self.line_ids)
+
+        if len(list(invalid_lines)):
+            raise InvalidProductLinesError(_('Some invoice lines doesnt have a valid product associated.'))
 
         return True
 
@@ -502,7 +539,7 @@ class EdiImport(models.TransientModel):
                         tasa = float(tax.attrib['TasaOCuota']) * 100
                         total_taxes += float(tax.attrib.get('Importe', 0))
 
-                        tax_item = AccountTax.search([('amount', '=', tasa), ('type_tax_use', '=', 'sale')], limit=1)
+                        tax_item = AccountTax.search([('amount', '=', tasa), ('type_tax_use', '=', 'purchase')], limit=1)
 
                         if tax_item.id:
                             tax_ids.append(tax_item.id)
@@ -587,6 +624,17 @@ class InvalidCurrencyError(UserError):
     def __init__(self, msg, currency_code):
         super(InvalidCurrencyError, self).__init__(msg)
         self.currency_code = currency_code
+
+
+class DuplicateUUIDError(UserError):
+    def __init__(self, msg, uuid):
+        super(DuplicateUUIDError, self).__init__(msg)
+        self.uuid = uuid
+
+
+class InvalidProductLinesError(UserError):
+    def __init__(self, msg):
+        super(InvalidProductLinesError, self).__init__(msg)
 
 
 class MissingPartnerError(UserError):

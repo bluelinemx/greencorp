@@ -10,9 +10,9 @@ import os.path
 
 
 class EdiBulkImportFile(models.TransientModel):
-    _inherit = 'l10n.mx.edi.import.invoice'
+    _inherit = 'l10n.mx.provider.xml.bulk.import.invoice'
 
-    wizard_id = fields.Many2one('l10n.mx.edi.bulk.import.wizard', ondelete='CASCADE')
+    wizard_id = fields.Many2one('l10n.mx.xml.bulk.import.wizard', ondelete='CASCADE')
     state = fields.Selection([
         ('pending', 'Pending'),
         ('done', 'Done'),
@@ -20,10 +20,12 @@ class EdiBulkImportFile(models.TransientModel):
     ], string='Status', default='pending')
 
     error_code = fields.Selection([
+        ('DuplicateUUIDError', 'Duplicate UUID'),
         ('MissingCompanyError', 'Missing Company'),
         ('InvalidCompanyError', 'Invalid Company'),
         ('InvalidCurrencyError', 'Invalid Currency'),
-        ('MissingPartnerError', 'Missing Partner'),
+        ('MissingPartnerError', 'Missing Provider'),
+        ('InvalidProductLinesError', 'Invalid Products'),
     ], string='Error Code')
 
     error_description = fields.Char('Error Description')
@@ -57,11 +59,11 @@ class EdiBulkImportFile(models.TransientModel):
 
 
 class EdiBulkImport(models.TransientModel):
-    _name = 'l10n.mx.edi.bulk.import.wizard'
+    _name = 'l10n.mx.xml.bulk.import.wizard'
 
     file_name = fields.Char()
     zip_file = fields.Binary(required=True, string='Zip or XML File')
-    file_ids = fields.One2many('l10n.mx.edi.import.invoice', 'wizard_id', string='Files')
+    file_ids = fields.One2many('l10n.mx.provider.xml.bulk.import.invoice', 'wizard_id', string='Files')
 
     files_count = fields.Integer('Count', compute='_compute_file_count')
     error_count = fields.Integer('Errors', compute='_compute_error_count')
@@ -125,7 +127,7 @@ class EdiBulkImport(models.TransientModel):
 
     @api.multi
     def action_refresh(self):
-        return self.action_preview_import()
+        return self.action_preview_import(refresh=True)
 
     @api.multi
     def action_finish(self):
@@ -137,13 +139,13 @@ class EdiBulkImport(models.TransientModel):
 
         return action
 
-    def action_preview_import(self):
+    def action_preview_import(self, refresh=False):
         if len(self.file_ids) == 0:
             raise UserError(_('There are no files to process. Please go back and upload a zip or xml file.'))
 
         for line in self.file_ids:
             try:
-                result = line.action_validate()
+                result = line.action_validate(refresh=refresh)
 
                 line.state = 'pending'
                 line.error_code = False
@@ -195,7 +197,7 @@ class EdiBulkImport(models.TransientModel):
         if not xml_files:
             UserError(_('No xml files found in the zip file'))
 
-        FileModel = self.env['l10n.mx.edi.import.invoice']
+        FileModel = self.env['l10n.mx.provider.xml.bulk.import.invoice']
 
         for item in xml_files:
             zitem = zf.read(item)
@@ -212,7 +214,7 @@ class EdiBulkImport(models.TransientModel):
 
     def process_xml_file(self):
 
-        FileModel = self.env['l10n.mx.edi.import.invoice']
+        FileModel = self.env['l10n.mx.provider.xml.bulk.import.invoice']
 
         FileModel.create({
             'wizard_id': self.id,
