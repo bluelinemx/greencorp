@@ -235,7 +235,7 @@ class EdiImport(models.TransientModel):
         self.refund_invoice_id = self.env['account.invoice'].sudo().search([('l10n_mx_cfdi_uuid', '=', self.l10n_mx_edi_redunded_invoice_cfdi_uuid)]).id if self.invoice_type == 'in_refund' else False
 
     @api.multi
-    def action_validate(self, refresh=False):
+    def action_validate(self, refresh=True):
         return self.process_xml_file(refresh=refresh)
 
     def validate_import(self):
@@ -403,7 +403,7 @@ class EdiImport(models.TransientModel):
         return action
 
     @api.multi
-    def process_xml_file(self, refresh=False):
+    def process_xml_file(self, refresh=True):
 
         try:
             xml = fromstring(base64.b64decode(self.xml_file))

@@ -35,7 +35,7 @@ class EdiBulkImportFile(models.TransientModel):
     def action_enable_currency(self):
         result = super().action_enable_currency()
 
-        return self.wizard_id.action_preview_import()
+        return self.wizard_id.action_preview_import(refresh=True)
 
     @api.multi
     def action_open_invoice(self):
@@ -211,7 +211,7 @@ class EdiBulkImport(models.TransientModel):
                 'xml_file': base64.b64encode(zitem),
             })
 
-        return self.action_preview_import()
+        return self.action_preview_import(refresh=False)
 
     def process_xml_file(self):
 
@@ -225,4 +225,4 @@ class EdiBulkImport(models.TransientModel):
             'xml_file': self.zip_file,
         })
 
-        return self.action_preview_import()
+        return self.action_preview_import(refresh=False)
