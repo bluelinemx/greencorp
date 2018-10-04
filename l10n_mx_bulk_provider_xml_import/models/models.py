@@ -313,7 +313,7 @@ class EdiImport(models.TransientModel):
             tax_lines.append((0, 0, self.get_invoice_tax_line_values_from_tax_line(line)))
 
         refunded_invoice = False
-        if self.l10n_mx_edi_redunded_invoice_cfdi_uuid:
+        if self.invoice_type == 'in_refund' and self.l10n_mx_edi_redunded_invoice_cfdi_uuid:
             refunded_invoice = self.env['account.invoice'].sudo().search([('l10n_mx_cfdi_uuid', '=', self.l10n_mx_edi_redunded_invoice_cfdi_uuid)])
 
         return {
