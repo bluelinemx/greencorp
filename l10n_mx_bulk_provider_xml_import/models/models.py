@@ -43,7 +43,7 @@ class EdiImportLine(models.TransientModel):
     l10n_mx_edi_code_sat_id = fields.Many2one('l10n_mx_edi.product.sat.code', string='SAT Code', compute='_compute_sat_code', ondelete='CASCADE')
     has_product = fields.Boolean()
 
-    product_id = fields.Many2one('product.product', 'Product', compute='_compute_product', store=True, domain="[('default_code', '=', product_code)]")
+    product_id = fields.Many2one('product.product', 'Product', compute='_compute_product', store=True, domain="['|', ('l10n_mx_edi_code_sat_id.code', '=', l10n_mx_edi_code_sat), ('default_code', '=', product_code)]")
     product_description = fields.Char('Description')
 
     currency_id = fields.Many2one('res.currency', 'Currency')
@@ -430,10 +430,11 @@ class EdiImport(models.TransientModel):
 
         self.payment_term_name = xml.attrib.get('CondicionesDePago') or ''
 
-        self.l10n_mx_edi_cfdi_supplier_name = xml.Emisor.attrib.get('Nombre', xml.Emisor.attrib.get('nombre'))
-        self.l10n_mx_edi_cfdi_supplier_rfc = xml.Emisor.attrib.get('Rfc', xml.Emisor.attrib.get('rfc'))
-        self.l10n_mx_edi_cfdi_customer_name = xml.Receptor.attrib.get('Nombre', xml.Receptor.attrib.get('nombre'))
-        self.l10n_mx_edi_cfdi_customer_rfc = xml.Receptor.attrib.get('Rfc', xml.Receptor.attrib.get('rfc'))
+        self.l10n_mx_edi_cfdi_supplier_name = xml.Receptor.attrib.get('Nombre', xml.Receptor.attrib.get('nombre'))
+        self.l10n_mx_edi_cfdi_supplier_rfc = xml.Receptor.attrib.get('Rfc', xml.Receptor.attrib.get('rfc'))
+        self.l10n_mx_edi_cfdi_customer_name = xml.Emisor.attrib.get('Nombre', xml.Emisor.attrib.get('nombre'))
+        self.l10n_mx_edi_cfdi_customer_rfc = xml.Emisor.attrib.get('Rfc', xml.Emisor.attrib.get('rfc'))
+
         self.l10n_mx_edi_usage = xml.Receptor.attrib.get('UsoCFDI')
 
         complemento_section = getattr(xml, 'Complemento', False)
@@ -556,13 +557,15 @@ class EdiImport(models.TransientModel):
 
                     if concept_tax_section:
                         tax = concept_tax_section.Traslados.Traslado[0]
-                        tasa = float(tax.attrib['TasaOCuota']) * 100
-                        total_taxes += float(tax.attrib.get('Importe', 0))
+                        if tax.attrib.get('TasaOCuota'):
 
-                        tax_item = AccountTax.search([('amount', '=', tasa), ('type_tax_use', '=', 'purchase')], limit=1)
+                            tasa = float(tax.attrib['TasaOCuota']) * 100
+                            total_taxes += float(tax.attrib.get('Importe', 0))
 
-                        if tax_item.id:
-                            tax_ids.append(tax_item.id)
+                            tax_item = AccountTax.search([('amount', '=', tasa), ('type_tax_use', '=', 'purchase')], limit=1)
+
+                            if tax_item.id:
+                                tax_ids.append(tax_item.id)
 
         price_subtotal = float(item.attrib.get('Importe', item.attrib.get('importe', 0)))
         quantity = float(item.attrib.get('Cantidad', item.attrib.get('cantidad', 0)))
