@@ -90,7 +90,7 @@ msgstr "Construcciones"
 #. module: l10n_mx_bulk_provider_xml_import
 #: model:ir.model.fields,field_description:l10n_mx_bulk_provider_xml_import.field_l10n_mx_xml_bulk_import_wizard_files_count
 msgid "Count"
-msgstr ""
+msgstr "Cantidad"
 
 #. module: l10n_mx_bulk_provider_xml_import
 #: model:ir.model.fields,field_description:l10n_mx_bulk_provider_xml_import.field_l10n_mx_provider_xml_bulk_import_invoice_create_uid
