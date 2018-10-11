@@ -266,9 +266,10 @@ class EdiImport(models.TransientModel):
 
         account_id = False
         if line.product_id.id:
-            account_id = line.product_id.property_account_income_id.id
+            accounts = line.product_id.product_tmpl_id._get_product_accounts()
+            account_id = accounts.get('expense') if line.product_id.type in ['consu', 'service'] else accounts.get('stock_input')
         if not account_id:
-            inc_acc = ir_property_obj.get('property_account_income_categ_id', 'product.category')
+            inc_acc = ir_property_obj.get('property_account_expense_categ_id', 'product.category')
             account_id = self.fiscal_position_id.map_account(inc_acc).id if inc_acc else False
 
         if line.product_id.id and not account_id:
@@ -412,7 +413,7 @@ class EdiImport(models.TransientModel):
             raise ValidationError('Unable to parse XML file')
 
         self.version = xml.attrib.get('Version')
-        self.name = xml.attrib.get('Folio')
+        self.name = "{}/{}".format(xml.attrib.get('Folio'), xml.attrib.get('Folio'))
         self.date_invoice = datetime.strptime(xml.attrib.get('Fecha'), '%Y-%m-%dT%H:%M:%S') if xml.attrib.get(
             'Fecha') else False
         self.currency_code = xml.attrib.get('Moneda')
