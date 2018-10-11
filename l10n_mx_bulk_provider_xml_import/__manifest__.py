@@ -15,7 +15,7 @@
     'category': 'Invoicing Management',
     'version': '0.1',
 
-    'depends': ['l10n_mx', 'l10n_mx_edi'],
+    'depends': ['l10n_mx', 'l10n_mx_edi', 'stock'],
 
     'data': [
         # 'security/ir.model.access.csv',
